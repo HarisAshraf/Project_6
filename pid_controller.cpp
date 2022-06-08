@@ -59,11 +59,14 @@ double PID::TotalError() {
        cte_d = (cte - cte_p)/dt;
     else
        cte_d = 0.0;
+  
+    // save for next iteration
+    cte_p = cte;
 
     // PID formula 
     control = Kp*cte + Ki*cte_i + Kd*cte_d; 
         
-        
+    // if error is above teh limit, do not integrate it.    
     if (control > output_lim_max){
         control = output_lim_max;
         lim_fl = true;
