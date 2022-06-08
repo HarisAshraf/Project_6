@@ -20,8 +20,8 @@ void PID::Init(double Kpi, double Kii, double Kdi, double output_lim_maxi, doubl
    * Initialize PID coefficients (and errors, if needed)
    **/
    this->Kp = Kpi;
-   this->Ki = Kdi;
-   this->Kd = Kii;
+   this->Ki = Kii;
+   this->Kd = Kdi;
      
    this->output_lim_max = output_lim_maxi;
    this->output_lim_min = output_lim_mini;
@@ -36,10 +36,28 @@ void PID::Init(double Kpi, double Kii, double Kdi, double output_lim_maxi, doubl
 
 
 void PID::UpdateError(double cte) {
+
    /**
    * Update PID errors based on cte.
    **/
    this->cte = cte;
+  
+    // diff error (ignore noise)   
+    // divide by zero protection
+  
+    double cte_p = 0.0;
+    if (dt != 0.0) 
+       cte_d = (cte - cte_p)/dt;
+    else
+       cte_d = 0.0;
+  
+   // save for next iteration
+    cte_p = cte;
+  
+   // integrate error if within limits
+    if (!lim_fl)
+       cte_i += cte*dt;
+  
 }
 
 double PID::TotalError() {
@@ -47,21 +65,7 @@ double PID::TotalError() {
    * Calculate and return the total error
     * The code should return a value in the interval [output_lim_mini, output_lim_maxi]
    */
-    double control, cte_d=0.0;
-        
-    // integrate error if within limits
-    if (!lim_fl)
-       cte_i += cte*dt;
-        
-    // diff error (ignore noise)   
-    // divide by zero protection
-    if (dt != 0.0) 
-       cte_d = (cte - cte_p)/dt;
-    else
-       cte_d = 0.0;
-  
-    // save for next iteration
-    cte_p = cte;
+    double control;    
 
     // PID formula 
     control = Kp*cte + Ki*cte_i + Kd*cte_d; 
