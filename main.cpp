@@ -216,18 +216,18 @@ int main ()
 
   // initialize pid steer
   /**
-  * (Step 1): create pid (pid_steer) for steer command and initialize values
+  * TODO (Step 1): create pid (pid_steer) for steer command and initialize values
   **/
-  PID pid_steer = PID();
-  pid_steer.Init(0.25, 0.0, 0.1, 1.2,-1.2);
+    PID pid_steer = PID();
+    pid_steer.Init(0.125,0.0,0.0004,1.2,-1.2);
 
-  // initialize pid throttle
-  /**
-  * (Step 1): create pid (pid_throttle) for throttle command and initialize values
-  **/
 
-  PID pid_throttle = PID();
-  pid_throttle.Init(0.1, 0.0, 0.1, 1.0,-1.0);
+    // initialize pid throttle
+    /**
+    * TODO (Step 1): create pid (pid_throttle) for throttle command and initialize values
+    **/
+    PID pid_throttle = PID();
+    pid_throttle.Init(0.15,0.01,0.1,1.0,-1.0);
 
   h.onMessage([&pid_steer, &pid_throttle, &new_delta_time, &timer, &prev_timer, &i, &prev_timer](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode)
   {
@@ -289,8 +289,8 @@ int main ()
           /**
           * TODO (step 3): uncomment these lines
           **/
-//           // Update the delta time with the previous command
-          pid_steer.UpdateDeltaTime(new_delta_time);
+//         // Update the delta time with the previous command
+           pid_steer.UpdateDeltaTime(new_delta_time);
 
           // Compute steer error
           double error_steer;
@@ -299,47 +299,30 @@ int main ()
           /**
           * TODO (step 3): compute the steer error (error_steer) from the position and the desired trajectory
           **/
-          
-          printf("%f %f\n", x_position, y_position);
-          for (i=0; i < x_points.size(); i++)
-            printf("%f %f\n", x_points[i], y_points[i]);
 
           double x1 = x_position;
           double y1 = y_position;
 
           double x2 = x_points.back();
           double y2 = y_points.back();
-                     
 
-          error_steer = angle_between_points(x1, y1, x2, y2) - yaw;
-          
-         // error_steer = 5 * (y_position - y_points[0]);   // from mentor help
-          
-          
-          // normalize the error angle
-          if (error_steer < -M_PI)
-            error_steer += 2*M_PI;
-          else if (error_steer > M_PI)
-            error_steer -= 2*M_PI;
-            
-
-          printf ("yaw %f target %f e_s %f dt %f\n", yaw, angle_between_points(x1, y1, x2, y2), error_steer, pid_steer.dt);             
+          error_steer = angle_between_points(x1, y1, x2, y2)/2.0 - yaw;
 
           /**
           * TODO (step 3): uncomment these lines
           **/
-          // Compute control to apply
-          pid_steer.UpdateError(error_steer);
-          steer_output = pid_steer.TotalError();
+//           // Compute control to apply
+           pid_steer.UpdateError(error_steer);
+           steer_output = pid_steer.TotalError();
 
-          // Save data
-          file_steer.seekg(std::ios::beg);
-          for(int j=0; j < i - 1; ++j) {
-              file_steer.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-          }
-          file_steer  << i ;
-          file_steer  << " " << error_steer;
-          file_steer  << " " << steer_output << endl;
+//           // Save data
+           file_steer.seekg(std::ios::beg);
+           for(int j=0; j < i - 1; ++j) {
+               file_steer.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+           }
+           file_steer  << i ;
+           file_steer  << " " << error_steer;
+           file_steer  << " " << steer_output << endl;
 
           ////////////////////////////////////////
           // Throttle control
@@ -348,7 +331,7 @@ int main ()
           /**
           * TODO (step 2): uncomment these lines
           **/
-          // Update the delta time with the previous command
+//           // Update the delta time with the previous command
           pid_throttle.UpdateDeltaTime(new_delta_time);
 
           // Compute error of speed
@@ -361,37 +344,35 @@ int main ()
           
           printf("vel %f target %f e_t %f dt %f\n", velocity, v_points.back(), error_throttle, pid_throttle.dt);
 
-
           double throttle_output;
           double brake_output;
 
           /**
-          * uncomment these lines
+          * TODO (step 2): uncomment these lines
           **/
-           // Compute control to apply
-          pid_throttle.UpdateError(error_throttle);
-          double throttle = pid_throttle.TotalError();
+//           // Compute control to apply
+           pid_throttle.UpdateError(error_throttle);
+           double throttle = pid_throttle.TotalError();
 
-          // Adapt the negative throttle to break
-          if (throttle > 0.0) {
+//           // Adapt the negative throttle to break
+           if (throttle > 0.0) {
              throttle_output = throttle;
              brake_output = 0;
-          } 
-          else {
+           } else {
              throttle_output = 0;
-             brake_output = -throttle*0.1;
-          }
+             brake_output = -throttle*0.5;
+           }
 
+//           // Save data
+           file_throttle.seekg(std::ios::beg);
+           for(int j=0; j < i - 1; ++j){
+               file_throttle.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+           }
+           file_throttle  << i ;
+           file_throttle  << " " << error_throttle;
+           file_throttle  << " " << brake_output;
+           file_throttle  << " " << throttle_output << endl;
 
-          // Save data
-          file_throttle.seekg(std::ios::beg);
-          for(int j=0; j < i - 1; ++j){
-              file_throttle.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
-          }
-          file_throttle  << i ;
-          file_throttle  << " " << error_throttle;
-          file_throttle  << " " << brake_output;
-          file_throttle  << " " << throttle_output << endl;
 
           // Send control
           json msgJson;

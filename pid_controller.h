@@ -17,9 +17,10 @@ public:
     /*
     * Errors
     */
-    double cte;
+    double cte;     // current error
     double cte_i;   // error integral
     double cte_p;   // previous error
+    double cte_d;   // error derivative
     /*
     * Coefficients
     */
@@ -36,7 +37,7 @@ public:
     /*
     * Delta time
     */
-     double dt;
+    double dt;
     /*
     * Constructor
     */
@@ -69,5 +70,3 @@ public:
 };
 
 #endif //PID_CONTROLLER_H
-
-

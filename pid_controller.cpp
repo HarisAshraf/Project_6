@@ -19,34 +19,36 @@ void PID::Init(double Kpi, double Kii, double Kdi, double output_lim_maxi, doubl
    /**
    * Initialize PID coefficients (and errors, if needed)
    **/
-   this->Kp = Kpi;
-   this->Ki = Kii;
-   this->Kd = Kdi;
+   Kp = Kpi;
+   Ki = Kii;
+   Kd = Kdi;
      
-   this->output_lim_max = output_lim_maxi;
-   this->output_lim_min = output_lim_mini;
+   output_lim_max = output_lim_maxi;
+   output_lim_min = output_lim_mini;
   
-   this->cte_i = 0.0;
+   cte = 0.0;
+   cte_p = 0.0;
+   cte_i = 0.0;
+   cte_d = 0.0;
+  
 
-   this->lim_fl = false;
+   lim_fl = false;     // boolean if the limit has been reached
   
-   this->dt = 0.0;
+   dt = 0.0;
   
 }
 
 
-void PID::UpdateError(double cte) {
+void PID::UpdateError(double _cte) {
 
-   /**
-   * Update PID errors based on cte.
-   **/
-   this->cte = cte;
+    //Update PID errors based on cte.
+    
+    cte = _cte;
   
     // diff error (ignore noise)   
     // divide by zero protection
   
-    double cte_p = 0.0;
-    if (dt != 0.0) 
+    if (dt > 0.0) 
        cte_d = (cte - cte_p)/dt;
     else
        cte_d = 0.0;
@@ -70,7 +72,7 @@ double PID::TotalError() {
     // PID formula 
     control = Kp*cte + Ki*cte_i + Kd*cte_d; 
         
-    // if error is above teh limit, do not integrate it.    
+    // if error is above the limit, do not integrate it.    
     if (control > output_lim_max){
         control = output_lim_max;
         lim_fl = true;
@@ -90,3 +92,4 @@ void PID::UpdateDeltaTime(double new_delta_time) {
    */
     this->dt = new_delta_time;
 }   
+
