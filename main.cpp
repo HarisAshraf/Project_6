@@ -303,7 +303,7 @@ int main ()
           /**
           * TODO (step 3): compute the steer error (error_steer) from the position and the desired trajectory
           **/
-
+          // compute error by desired - measured. desired yaw is a straight line between car's position an last element of teh trajectory.
           double x1 = x_position;
           double y1 = y_position;
 
@@ -343,7 +343,8 @@ int main ()
           /**
           * TODO (step 2): compute the throttle error (error_throttle) from the position and the desired speed
           **/
-          // modify the following line for step 2
+          // compute error by desired - measured. desired velocity the last element of teh trajectory.
+		
           error_throttle = v_points.back() - velocity;
           
           printf("vel %f target %f e_t %f dt %f\n", velocity, v_points.back(), error_throttle, pid_throttle.dt);
